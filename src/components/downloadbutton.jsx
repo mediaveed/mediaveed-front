@@ -1,36 +1,27 @@
 import React, { useState } from "react";
 import { Button, ButtonGroup, Card } from "react-bootstrap";
-import { Loader2 } from "lucide-react";
+import { Loader2, CheckCircle } from "lucide-react";
+import PlatformBadge from "./platformBadge";
 import "./components.module.css";
 
+const DownloadOptions = ({ proxyUrl, title, platform, backendRoot, thumbnail }) => {
+  const [loadingVideo, setLoadingVideo] = useState(false);
+  const [loadingAudio, setLoadingAudio] = useState(false);
+  const [done, setDone] = useState(false);
 
-const DownloadOptions = ({
-  proxyUrl,
-  title,
-  platform,
-  backendRoot,
-  thumbnailUrl,
-}) => {
-  const [loading, setLoading] = useState(false);
-
-  const handleDownload = async (format = "mp4") => {
+  const handleDownload = async (kind = "video") => {
     try {
-      setLoading(true);
+      if (kind === "video") setLoadingVideo(true);
+      if (kind === "audio") setLoadingAudio(true);
+      setDone(false);
 
-      // ✅ Build proper download URL
       let url;
       if (proxyUrl.startsWith("/api")) {
-        url = `${backendRoot}${proxyUrl}${
-          proxyUrl.includes("?") ? "&" : "?"
-        }format=${format}`;
-      } else if (proxyUrl.startsWith("http")) {
-        url = `${backendRoot}/api/v1/${platform}/download?video_url=${encodeURIComponent(
-          proxyUrl
-        )}&title=${encodeURIComponent(title)}&format=${format}`;
+        url = `${backendRoot}${proxyUrl}`;
       } else {
         url = `${backendRoot}/api/v1/${platform}/download?video_url=${encodeURIComponent(
-          `${backendRoot}${proxyUrl}`
-        )}&title=${encodeURIComponent(title)}&format=${format}`;
+          proxyUrl
+        )}&title=${encodeURIComponent(title)}&kind=${kind}`;
       }
 
       console.log("🎯 Download URL:", url);
@@ -38,24 +29,32 @@ const DownloadOptions = ({
       const response = await fetch(url);
       if (!response.ok) throw new Error("Failed to download file");
 
-      // ✅ Create a blob URL and trigger browser download
       const blob = await response.blob();
       const blobUrl = window.URL.createObjectURL(blob);
 
       const link = document.createElement("a");
       link.href = blobUrl;
-      link.download = `${title || "video"}.${format}`;
+      link.download = `${title || "video"}.${kind === "audio" ? "mp3" : "mp4"}`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
 
       window.URL.revokeObjectURL(blobUrl);
+      setDone(true);
     } catch (err) {
       console.error("❌ Download failed:", err);
       alert("Failed to download. Please try again.");
     } finally {
-      setLoading(false);
+      setLoadingVideo(false);
+      setLoadingAudio(false);
+      setTimeout(() => setDone(false), 3000);
     }
+  };
+  const getThumbnailSrc = () => {
+    if (!thumbnail) return null;
+    return thumbnail.startsWith("http")
+      ? thumbnail
+      : `${backendRoot}${thumbnail}`;
   };
 
   return (
@@ -65,20 +64,17 @@ const DownloadOptions = ({
         style={{
           width: "25rem",
           borderRadius: "1rem",
-          background:
-            "linear-gradient(145deg, rgba(17,24,39,0.95), rgba(31,41,55,0.85))",
+          background: "linear-gradient(145deg, rgba(17,24,39,0.95), rgba(31,41,55,0.85))",
           color: "white",
-          boxShadow: "0 20px 50px rgba(0,0,0,0.5)",
+          overflow: "hidden",
         }}
       >
-        {thumbnailUrl && (
+        {thumbnail && (
           <Card.Img
             variant="top"
-            src={thumbnailUrl}
-            alt={title || "Video Thumbnail"}
+          src={getThumbnailSrc()}
+             alt={title || "Video Thumbnail"}
             style={{
-              borderTopLeftRadius: "1rem",
-              borderTopRightRadius: "1rem",
               height: "200px",
               objectFit: "cover",
               borderBottom: "1px solid rgba(255,255,255,0.1)",
@@ -88,25 +84,23 @@ const DownloadOptions = ({
         )}
 
         <Card.Body className="text-center p-4">
-          <Card.Title
-            className="fw-bold mb-3"
-            style={{ fontSize: "1.25rem", color: "#f8fafc" }}
-          >
+          {/* Platform Badge */}
+          <div className="d-flex justify-content-center mb-3">
+            <PlatformBadge platform={platform} />
+          </div>
+
+          <Card.Title className="fw-bold mb-2" style={{ fontSize: "1.3rem", color: "#f8fafc" }}>
             {title || "Ready to Download"}
           </Card.Title>
 
-          <Card.Text
-            className="text-muted mb-4"
-            style={{ color: "#cbd5e1" }}
-          >
-            Choose your preferred format below 👇
+          <Card.Text className="mb-4" style={{ color: "#cbd5e1", fontSize: "0.9rem" }}>
+            Choose your preferred format 👇
           </Card.Text>
 
           <ButtonGroup vertical className="w-100">
             <Button
-              className="download-btn-primary mb-3 d-flex justify-content-center align-items-center"
-              onClick={() => handleDownload("mp4")}
-              disabled={loading}
+              onClick={() => handleDownload("video")}
+              disabled={loadingVideo || loadingAudio}
               style={{
                 background: "linear-gradient(135deg, #3b82f6, #6366f1)",
                 border: "none",
@@ -115,25 +109,27 @@ const DownloadOptions = ({
                 padding: "0.9rem 1rem",
                 letterSpacing: "0.5px",
                 textTransform: "uppercase",
+                marginBottom: "10px",
               }}
             >
-              {loading ? (
+              {loadingVideo ? (
                 <>
-                  <Loader2 className="me-2 animate-spin" size={18} />
-                  Downloading...
+                  <Loader2 className="me-2 animate-spin" size={18} /> Downloading...
+                </>
+              ) : done ? (
+                <>
+                  <CheckCircle className="me-2 text-green-400" size={18} /> Done!
                 </>
               ) : (
                 <>
-                  <i className="bi bi-download me-2"></i>
-                  Download HD Video
+                  <i className="bi bi-download me-2"></i> Download HD Video
                 </>
               )}
             </Button>
 
             <Button
-              className="download-btn-secondary d-flex justify-content-center align-items-center"
-              onClick={() => handleDownload("mp3")}
-              disabled={loading}
+              onClick={() => handleDownload("audio")}
+              disabled={loadingVideo || loadingAudio}
               style={{
                 background: "rgba(253, 183, 20, 0.15)",
                 border: "2px solid rgba(253, 183, 20, 0.5)",
@@ -145,15 +141,13 @@ const DownloadOptions = ({
                 textTransform: "uppercase",
               }}
             >
-              {loading ? (
+              {loadingAudio ? (
                 <>
-                  <Loader2 className="me-2 animate-spin" size={18} />
-                  Processing...
+                  <Loader2 className="me-2 animate-spin" size={18} /> Processing...
                 </>
               ) : (
                 <>
-                  <i className="bi bi-music-note-beamed me-2"></i>
-                  Audio Only (MP3)
+                  <i className="bi bi-music-note-beamed me-2"></i> Audio Only (MP3)
                 </>
               )}
             </Button>
@@ -164,7 +158,7 @@ const DownloadOptions = ({
             style={{ fontSize: "0.85rem", color: "#9ca3af" }}
           >
             <i className="bi bi-info-circle me-1"></i>
-            Best quality available from source
+            Best available quality from {platform || "source"}
           </div>
         </Card.Body>
       </Card>

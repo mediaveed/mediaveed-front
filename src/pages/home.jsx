@@ -68,14 +68,16 @@ export default function Home() {
                 Fast, free, and easy to use. No registration required.
               </p>
 
-               {data && (
-                <DownloadOptions
-                  proxyUrl={data.proxy_url}
-                  title={data.title}
-                  thumbnail={data.thumbnail}
-                  platform={data.platform}
-                />
-              )}
+                {data && (
+  <DownloadOptions
+    proxyUrl={data.proxy_url}
+    title={data.title}
+    thumbnail={data.thumbnail}
+    platform={data.platform}
+    backendRoot={BASE_URL}   // ✅ add this
+  />
+)}
+
 
               <div className="input-section">
                 <UrlInput url={url} setUrl={setUrl} onSubmit={handleSubmit} />
