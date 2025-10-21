@@ -1,60 +1,100 @@
 import React, { useState } from "react";
 import { Button, ButtonGroup, Card } from "react-bootstrap";
-import { Loader2, CheckCircle } from "lucide-react";
+import { Loader2, CheckCircle, AlertCircle } from "lucide-react";
 import PlatformBadge from "./platformbadge";
+// import { downloadMedia } from "../api/extractor";
 import "./components.module.css";
 
-const DownloadOptions = ({ proxyUrl, title, platform, backendRoot, thumbnail }) => {
+const DownloadOptions = ({ proxyUrl, title, platform, backendRoot, thumbnail, originalUrl }) => {
   const [loadingVideo, setLoadingVideo] = useState(false);
   const [loadingAudio, setLoadingAudio] = useState(false);
   const [done, setDone] = useState(false);
+  const [error, setError] = useState(null);
 
   const handleDownload = async (kind = "video") => {
     try {
       if (kind === "video") setLoadingVideo(true);
       if (kind === "audio") setLoadingAudio(true);
       setDone(false);
+      setError(null);
 
-      let url;
-      if (proxyUrl.startsWith("/api")) {
-        url = `${backendRoot}${proxyUrl}`;
+      console.log(`🎯 Starting ${kind} download...`);
+      console.log(`Platform: ${platform}`);
+      console.log(`Proxy URL: ${proxyUrl}`);
+      console.log(`Original URL: ${originalUrl}`);
+      console.log(`Title: ${title}`);
+
+      // Build download URL
+      let downloadUrl;
+      
+      if (proxyUrl.startsWith('/api')) {
+        downloadUrl = `${backendRoot}${proxyUrl}`;
+      } else if (proxyUrl.startsWith('http')) {
+        downloadUrl = proxyUrl;
       } else {
-        url = `${backendRoot}/api/v1/${platform}/download?video_url=${encodeURIComponent(
-          proxyUrl
-        )}&title=${encodeURIComponent(title)}&kind=${kind}`;
+        throw new Error('Invalid proxy URL format');
       }
 
-      console.log("🎯 Download URL:", url);
+      // Add kind parameter for audio downloads
+      if (kind === 'audio' && !downloadUrl.includes('kind=')) {
+        const separator = downloadUrl.includes('?') ? '&' : '?';
+        downloadUrl += `${separator}kind=audio`;
+      }
 
-      const response = await fetch(url);
-      if (!response.ok) throw new Error("Failed to download file");
+      console.log(`🎯 Final download URL: ${downloadUrl}`);
+
+      const response = await fetch(downloadUrl);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Download failed:', errorText);
+        throw new Error(`Download failed with status ${response.status}`);
+      }
 
       const blob = await response.blob();
       const blobUrl = window.URL.createObjectURL(blob);
 
-      const link = document.createElement("a");
+      // Create download link
+      const link = document.createElement('a');
       link.href = blobUrl;
-      link.download = `${title || "video"}.${kind === "audio" ? "mp3" : "mp4"}`;
+      link.download = `${title || 'video'}.${kind === 'audio' ? 'mp3' : 'mp4'}`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
 
+      // Cleanup
       window.URL.revokeObjectURL(blobUrl);
+
       setDone(true);
+      console.log(`✅ ${kind} download completed`);
+
     } catch (err) {
-      console.error("❌ Download failed:", err);
-      alert("Failed to download. Please try again.");
+      console.error(`❌ ${kind} download failed:`, err);
+      setError(err.message || `Failed to download ${kind}. Please try again.`);
     } finally {
       setLoadingVideo(false);
       setLoadingAudio(false);
-      setTimeout(() => setDone(false), 3000);
+      setTimeout(() => {
+        setDone(false);
+        setError(null);
+      }, 3000);
     }
   };
+
   const getThumbnailSrc = () => {
     if (!thumbnail) return null;
-    return thumbnail.startsWith("http")
-      ? thumbnail
-      : `${backendRoot}${thumbnail}`;
+    
+    // Handle absolute URLs
+    if (thumbnail.startsWith("http")) {
+      return thumbnail;
+    }
+    
+    // Handle relative URLs
+    if (thumbnail.startsWith("/")) {
+      return `${backendRoot}${thumbnail}`;
+    }
+    
+    return `${backendRoot}/${thumbnail}`;
   };
 
   return (
@@ -72,14 +112,17 @@ const DownloadOptions = ({ proxyUrl, title, platform, backendRoot, thumbnail }) 
         {thumbnail && (
           <Card.Img
             variant="top"
-          src={getThumbnailSrc()}
-             alt={title || "Video Thumbnail"}
+            src={getThumbnailSrc()}
+            alt={title || "Video Thumbnail"}
             style={{
               height: "200px",
               objectFit: "cover",
               borderBottom: "1px solid rgba(255,255,255,0.1)",
             }}
-            onError={(e) => (e.target.style.display = "none")}
+            onError={(e) => {
+              console.warn("Thumbnail failed to load:", getThumbnailSrc());
+              e.target.style.display = "none";
+            }}
           />
         )}
 
@@ -97,12 +140,31 @@ const DownloadOptions = ({ proxyUrl, title, platform, backendRoot, thumbnail }) 
             Choose your preferred format 👇
           </Card.Text>
 
+          {/* Error Display */}
+          {error && (
+            <div
+              className="alert alert-danger d-flex align-items-center mb-3"
+              style={{
+                background: "rgba(239, 68, 68, 0.2)",
+                border: "1px solid rgba(239, 68, 68, 0.5)",
+                borderRadius: "8px",
+                padding: "0.75rem",
+              }}
+            >
+              <AlertCircle size={18} className="me-2" />
+              <small>{error}</small>
+            </div>
+          )}
+
           <ButtonGroup vertical className="w-100">
+            {/* Video Download Button */}
             <Button
               onClick={() => handleDownload("video")}
               disabled={loadingVideo || loadingAudio}
               style={{
-                background: "linear-gradient(135deg, #3b82f6, #6366f1)",
+                background: loadingVideo
+                  ? "linear-gradient(135deg, #6366f1, #8b5cf6)"
+                  : "linear-gradient(135deg, #3b82f6, #6366f1)",
                 border: "none",
                 borderRadius: "10px",
                 fontWeight: "600",
@@ -110,28 +172,35 @@ const DownloadOptions = ({ proxyUrl, title, platform, backendRoot, thumbnail }) 
                 letterSpacing: "0.5px",
                 textTransform: "uppercase",
                 marginBottom: "10px",
+                transition: "all 0.3s ease",
               }}
             >
               {loadingVideo ? (
                 <>
-                  <Loader2 className="me-2 animate-spin" size={18} /> Downloading...
+                  <Loader2 className="me-2 animate-spin" size={18} style={{ display: "inline" }} />
+                  Downloading...
                 </>
-              ) : done ? (
+              ) : done && !loadingAudio ? (
                 <>
-                  <CheckCircle className="me-2 text-green-400" size={18} /> Done!
+                  <CheckCircle className="me-2" size={18} style={{ display: "inline", color: "#10b981" }} />
+                  Done!
                 </>
               ) : (
                 <>
-                  <i className="bi bi-download me-2"></i> Download HD Video
+                  <i className="bi bi-download me-2"></i>
+                  Download HD Video
                 </>
               )}
             </Button>
 
+            {/* Audio Download Button */}
             <Button
               onClick={() => handleDownload("audio")}
               disabled={loadingVideo || loadingAudio}
               style={{
-                background: "rgba(253, 183, 20, 0.15)",
+                background: loadingAudio
+                  ? "rgba(253, 183, 20, 0.3)"
+                  : "rgba(253, 183, 20, 0.15)",
                 border: "2px solid rgba(253, 183, 20, 0.5)",
                 color: "#fcd34d",
                 borderRadius: "10px",
@@ -139,15 +208,23 @@ const DownloadOptions = ({ proxyUrl, title, platform, backendRoot, thumbnail }) 
                 padding: "0.9rem 1rem",
                 letterSpacing: "0.5px",
                 textTransform: "uppercase",
+                transition: "all 0.3s ease",
               }}
             >
               {loadingAudio ? (
                 <>
-                  <Loader2 className="me-2 animate-spin" size={18} /> Processing...
+                  <Loader2 className="me-2 animate-spin" size={18} style={{ display: "inline" }} />
+                  Processing...
+                </>
+              ) : done && !loadingVideo ? (
+                <>
+                  <CheckCircle className="me-2" size={18} style={{ display: "inline", color: "#10b981" }} />
+                  Done!
                 </>
               ) : (
                 <>
-                  <i className="bi bi-music-note-beamed me-2"></i> Audio Only (MP3)
+                  <i className="bi bi-music-note-beamed me-2"></i>
+                  Audio Only (MP3)
                 </>
               )}
             </Button>

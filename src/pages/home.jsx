@@ -3,7 +3,7 @@ import { BASE_URL } from '../api/config/api';
 import { Container, Row, Col } from 'react-bootstrap';
 import UrlInput from '../components/input';
 import Loader from '../components/loader';
-import { extractVideo } from '../api/extractor';
+import { extractVideo, detectPlatform } from '../api/extractor';
 import './home.css';
 import DownloadOptions from '../components/downloadbutton';
 
@@ -13,38 +13,68 @@ export default function Home() {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
 
- const handleSubmit = async (e) => {
-  e.preventDefault();
-  if (!url.trim()) return;
-
-  setLoading(true);
-  setError(null);
-  setData(null);
-
-  try {
-    const result = await extractVideo(url);
-
-    // Check for backend-level errors
-    if (result.detail) {
-      setError(result.detail);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!url.trim()) {
+      setError("Please enter a valid URL");
       return;
     }
 
-    // Check for progressive availability
-    if (!result.proxy_url && !result.best_audio) {
-      setError("No downloadable formats available for this video.");
+    // Detect platform first
+    const platform = detectPlatform(url);
+    if (!platform) {
+      setError("Unsupported platform. Please use YouTube, TikTok, Instagram, or Twitter URLs.");
       return;
     }
 
-    setData(result);
+    setLoading(true);
+    setError(null);
+    setData(null);
 
-  } catch (err) {
-    console.error(err);
-    setError(err.message || "Failed to extract video. Please try again.");
-  } finally {
-    setLoading(false);
-  }
-};
+    try {
+      console.log(`🚀 Extracting video from ${platform}...`);
+      const result = await extractVideo(url);
+
+      console.log('📦 Extraction result:', result);
+
+      // Validate the result
+      if (!result) {
+        throw new Error("No data received from server");
+      }
+
+      // Check if we have a downloadable URL
+      if (!result.proxy_url && !result.video_url) {
+        throw new Error("No downloadable formats available for this video");
+      }
+
+      // Set the data
+      setData(result);
+      console.log('✅ Video data loaded successfully');
+
+    } catch (err) {
+      console.error('❌ Extraction error:', err);
+      
+      // Handle different error types
+      let errorMessage = "Failed to extract video. Please try again.";
+      
+      if (err.message) {
+        errorMessage = err.message;
+      } else if (typeof err === 'string') {
+        errorMessage = err;
+      }
+      
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Clear error when URL changes
+  const handleUrlChange = (newUrl) => {
+    setUrl(newUrl);
+    if (error) setError(null);
+  };
 
   return (
     <div className="home-page">
@@ -68,43 +98,54 @@ export default function Home() {
                 Fast, free, and easy to use. No registration required.
               </p>
 
-                {data && (
-  <DownloadOptions
-    proxyUrl={data.proxy_url}
-    title={data.title}
-    thumbnail={data.thumbnail}
-    platform={data.platform}
-    backendRoot={BASE_URL}   // ✅ add this
-  />
-)}
-
-
               <div className="input-section">
-                <UrlInput url={url} setUrl={setUrl} onSubmit={handleSubmit} />
+                <UrlInput 
+                  url={url} 
+                  setUrl={handleUrlChange} 
+                  onSubmit={handleSubmit} 
+                />
 
-                {loading && <Loader />}
-{error && (
-  <div className="error-alert text-center mt-3">
-    <div
-      style={{
-        background: "rgba(239, 68, 68, 0.1)",
-        border: "1px solid rgba(239, 68, 68, 0.4)",
-        color: "#f87171",
-        borderRadius: "8px",
-        padding: "1rem",
-        maxWidth: "500px",
-        margin: "0 auto",
-        fontWeight: "500",
-      }}
-    >
-      <i className="bi bi-exclamation-triangle-fill me-2"></i>
-      {error}
-    </div>
-  </div>
-)}
+                {loading && (
+                  <div className="mt-4">
+                    <Loader />
+                    <p className="text-center mt-2" style={{ color: '#6b7280' }}>
+                      Extracting video metadata...
+                    </p>
+                  </div>
+                )}
 
+                {error && (
+                  <div className="error-alert text-center mt-3">
+                    <div
+                      style={{
+                        background: "rgba(239, 68, 68, 0.1)",
+                        border: "1px solid rgba(239, 68, 68, 0.4)",
+                        color: "#f87171",
+                        borderRadius: "8px",
+                        padding: "1rem",
+                        maxWidth: "500px",
+                        margin: "0 auto",
+                        fontWeight: "500",
+                      }}
+                    >
+                      <i className="bi bi-exclamation-triangle-fill me-2"></i>
+                      {error}
+                    </div>
+                  </div>
+                )}
               </div>
 
+              {/* Download Options - Only show if we have valid data */}
+              {data && data.proxy_url && !loading && !error && (
+                <DownloadOptions
+                  proxyUrl={data.proxy_url}
+                  title={data.title}
+                  thumbnail={data.thumbnail}
+                  platform={data.platform}
+                  backendRoot={BASE_URL}
+                  originalUrl={data.original_url || url}
+                />
+              )}
 
               <div className="supported-platforms">
                 <p className="platforms-label">Supported Platforms:</p>
@@ -170,8 +211,6 @@ export default function Home() {
           </Col>
         </Row>
       </Container>
-
-  
     </div>
   );
 }
