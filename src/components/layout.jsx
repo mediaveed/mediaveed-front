@@ -1,8 +1,27 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navbar, Nav, Container } from 'react-bootstrap';
 import './components.module.css';
 
 const Layout = ({ children }) => {
+  const [activeLink, setActiveLink] = useState('home');
+
+  // Set active link based on current hash
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace('#', '') || 'home';
+      setActiveLink(hash);
+    };
+
+    handleHashChange();
+    window.addEventListener('hashchange', handleHashChange);
+    
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  const handleNavClick = (link) => {
+    setActiveLink(link);
+  };
+
   return (
     <div className="main-container">
       <div className="gradient-orb gradient-orb-1"></div>
@@ -12,38 +31,57 @@ const Layout = ({ children }) => {
       <div className="background-pattern"></div>
 
       {/* Navbar */}
-      <Navbar expand="lg" className="custom-navbar">
+      <Navbar variant="dark" expand="lg" className="custom-navbar">
         <Container>
           <Navbar.Brand href="/" className="brand-logo">
-            <i className="bi bi-film" style={{ fontSize: '1.8rem', color: 'var(--primary-yellow)' }}></i>
+            <i 
+              className="bi bi-film m-2" 
+              style={{ 
+                fontSize: '1.8rem', 
+                color: '#ffffff' 
+              }}
+            ></i>
             <span className="logo-text">
-              VideoGrab<span className="logo-dot">.</span>
+              MediaVeed<span className="logo-dot">.</span>
             </span>
           </Navbar.Brand>
 
           <Navbar.Toggle 
-            aria-controls="basic-navbar-nav" 
-            style={{ 
-              borderColor: 'rgba(59, 130, 246, 0.3)',
-              filter: 'invert(1)'
-            }} 
+            aria-controls="basic-navbar-nav"
+            className="navbar-toggler"
           />
           
           <Navbar.Collapse id="basic-navbar-nav">
             <Nav className="ms-auto nav-links">
-              <Nav.Link href="/" className="active">
+              <Nav.Link 
+                href="/" 
+                className={activeLink === 'home' ? 'active' : ''}
+                onClick={() => handleNavClick('home')}
+              >
                 <i className="bi bi-house-door-fill"></i>
                 Home
               </Nav.Link>
-              <Nav.Link href="#features">
+              <Nav.Link 
+                href="#features"
+                className={activeLink === 'features' ? 'active' : ''}
+                onClick={() => handleNavClick('features')}
+              >
                 <i className="bi bi-stars"></i>
                 Features
               </Nav.Link>
-              <Nav.Link href="#how-it-works">
+              <Nav.Link 
+                href="#how-it-works"
+                className={activeLink === 'how-it-works' ? 'active' : ''}
+                onClick={() => handleNavClick('how-it-works')}
+              >
                 <i className="bi bi-gear-fill"></i>
                 How It Works
               </Nav.Link>
-              <Nav.Link href="#supported">
+              <Nav.Link 
+                href="#supported"
+                className={activeLink === 'supported' ? 'active' : ''}
+                onClick={() => handleNavClick('supported')}
+              >
                 <i className="bi bi-check-circle-fill"></i>
                 Supported
               </Nav.Link>
@@ -72,10 +110,10 @@ const Layout = ({ children }) => {
               <a href="#faq">FAQ</a>
             </div>
           </div>
-          <div className="text-center mt-3" style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+          <div className="text-center mt-3" style={{ color: '#94a3b8', fontSize: '0.85rem' }}>
             <p className="mb-0">
               © {new Date().getFullYear()} VideoGrab. Made with{' '}
-              <i className="bi bi-heart-fill" style={{ color: 'var(--primary-pink)' }}></i>
+              <i className="bi bi-heart-fill" style={{ color: '#ec4899' }}></i>
               {' '}for content creators
             </p>
           </div>

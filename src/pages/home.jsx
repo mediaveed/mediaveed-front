@@ -6,6 +6,7 @@ import Loader from '../components/loader';
 import { extractVideo, detectPlatform } from '../api/extractor';
 import './home.css';
 import DownloadOptions from '../components/downloadbutton';
+import { TopBannerAd, MidBannerAd, MiddleBannerAd, FooterBannerAd, ResponsiveAdWrapper } from '../components/AdBanner';
 
 export default function Home() {
   const [url, setUrl] = useState('');
@@ -15,7 +16,7 @@ export default function Home() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!url.trim()) {
       setError("Please enter a valid URL");
       return;
@@ -54,16 +55,16 @@ export default function Home() {
 
     } catch (err) {
       console.error('❌ Extraction error:', err);
-      
+
       // Handle different error types
       let errorMessage = "Failed to extract video. Please try again.";
-      
+
       if (err.message) {
         errorMessage = err.message;
       } else if (typeof err === 'string') {
         errorMessage = err;
       }
-      
+
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -78,6 +79,15 @@ export default function Home() {
 
   return (
     <div className="home-page">
+      {/* TOP BANNER AD */}
+      <div className="ad-section ad-section-top">
+        <Container>
+          <ResponsiveAdWrapper type="top">
+            <TopBannerAd />
+          </ResponsiveAdWrapper>
+        </Container>
+      </div>
+
       <Container>
         <Row className="justify-content-center">
           <Col lg={10} xl={8}>
@@ -94,46 +104,42 @@ export default function Home() {
               </h1>
 
               <p className="hero-subtitle">
-                Download videos from YouTube, TikTok, Instagram, Twitter and more. 
+                Download videos from YouTube, TikTok, Instagram, Twitter and more.
                 Fast, free, and easy to use. No registration required.
               </p>
 
               <div className="input-section">
-                <UrlInput 
-                  url={url} 
-                  setUrl={handleUrlChange} 
-                  onSubmit={handleSubmit} 
+                <UrlInput
+                  url={url}
+                  setUrl={handleUrlChange}
+                  onSubmit={handleSubmit}
                 />
 
                 {loading && (
                   <div className="mt-4">
                     <Loader />
-                    <p className="text-center mt-2" style={{ color: '#6b7280' }}>
+                    <p className="text-center mt-2" style={{ color: '#9ca3af' }}>
                       Extracting video metadata...
                     </p>
                   </div>
                 )}
 
                 {error && (
-                  <div className="error-alert text-center mt-3">
-                    <div
-                      style={{
-                        background: "rgba(239, 68, 68, 0.1)",
-                        border: "1px solid rgba(239, 68, 68, 0.4)",
-                        color: "#f87171",
-                        borderRadius: "8px",
-                        padding: "1rem",
-                        maxWidth: "500px",
-                        margin: "0 auto",
-                        fontWeight: "500",
-                      }}
-                    >
-                      <i className="bi bi-exclamation-triangle-fill me-2"></i>
-                      {error}
-                    </div>
+                  <div className="error-message">
+                    <i className="bi bi-exclamation-triangle-fill me-2"></i>
+                    {error}
                   </div>
                 )}
               </div>
+
+              {/* MID-PAGE AD - Shows when video data is loaded */}
+              {data && !loading && (
+                <div className="ad-section ad-section-mid">
+                  <ResponsiveAdWrapper type="mid">
+                    <MidBannerAd />
+                  </ResponsiveAdWrapper>
+                </div>
+              )}
 
               {/* Download Options - Only show if we have valid data */}
               {data && data.proxy_url && !loading && !error && (
@@ -185,14 +191,14 @@ export default function Home() {
                     <i className="bi bi-shield-check"></i>
                   </div>
                   <h3>100% Safe</h3>
-                  <p>No malware, no ads, completely secure downloads</p>
+                  <p>No malware, completely secure downloads</p>
                 </div>
                 <div className="feature-card">
                   <div className="feature-icon">
                     <i className="bi bi-phone"></i>
                   </div>
                   <h3>All Devices</h3>
-                  <p>Works on desktop, mobile, and tablet devices</p>
+                  <p>Works perfectly on desktop, mobile, and tablet devices</p>
                 </div>
                 <div className="feature-card">
                   <div className="feature-icon">
@@ -207,6 +213,13 @@ export default function Home() {
             <div className="warning-banner">
               <i className="bi bi-shield-exclamation"></i>
               <p>WE DO NOT ALLOW/SUPPORT THE DOWNLOAD OF COPYRIGHTED MATERIAL!</p>
+            </div>
+
+            {/* FOOTER AD */}
+            <div className="ad-section ad-section-footer">
+              <ResponsiveAdWrapper type="footer">
+                <FooterBannerAd />
+              </ResponsiveAdWrapper>
             </div>
           </Col>
         </Row>
