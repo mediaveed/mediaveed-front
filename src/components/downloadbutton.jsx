@@ -23,24 +23,30 @@ const DownloadOptions = ({ proxyUrl, title, platform, backendRoot, thumbnail, or
       console.log(`Original URL: ${originalUrl}`);
       console.log(`Title: ${title}`);
 
-      // Build download URL - ALWAYS use original URL for TikTok
+      // Build download URL
       let downloadUrl;
 
-      if (platform === 'tiktok' && originalUrl) {
-        // For TikTok, construct URL with original TikTok URL (not CDN)
-        const encodedUrl = encodeURIComponent(originalUrl);
-        const encodedTitle = encodeURIComponent(title || 'TikTok_Video');
-        downloadUrl = `${backendRoot}/api/v1/tiktok/download?video_url=${encodedUrl}&title=${encodedTitle}&kind=${kind}`;
-        console.log(`🎯 Using original TikTok URL for download`);
-      } else if (proxyUrl.startsWith('/api')) {
+      // The proxy_url from backend already contains the correct original URL
+      if (proxyUrl.startsWith('/api')) {
         downloadUrl = `${backendRoot}${proxyUrl}`;
-        // Add kind parameter for audio downloads
+
+        // Update kind parameter if needed
+        if (kind === 'audio') {
+          // Replace kind=video with kind=audio or add kind=audio
+          if (downloadUrl.includes('kind=video')) {
+            downloadUrl = downloadUrl.replace('kind=video', 'kind=audio');
+          } else if (!downloadUrl.includes('kind=')) {
+            const separator = downloadUrl.includes('?') ? '&' : '?';
+            downloadUrl += `${separator}kind=audio`;
+          }
+        }
+      } else if (proxyUrl.startsWith('http')) {
+        downloadUrl = proxyUrl;
+        // Add kind parameter for audio
         if (kind === 'audio' && !downloadUrl.includes('kind=')) {
           const separator = downloadUrl.includes('?') ? '&' : '?';
           downloadUrl += `${separator}kind=audio`;
         }
-      } else if (proxyUrl.startsWith('http')) {
-        downloadUrl = proxyUrl;
       } else {
         throw new Error('Invalid proxy URL format');
       }
