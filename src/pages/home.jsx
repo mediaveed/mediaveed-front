@@ -6,7 +6,7 @@ import Loader from '../components/loader';
 import { extractVideo, detectPlatform } from '../api/extractor';
 import './home.css';
 import DownloadOptions from '../components/downloadbutton';
-import { TopBannerAd, MidBannerAd, MiddleBannerAd, FooterBannerAd, ResponsiveAdWrapper } from '../components/AdBanner';
+import { TopBannerAd, MidBannerAd, MiddleBannerAd, FooterBannerAd, ResponsiveAdWrapper } from '../components/Adbanner';
 
 export default function Home() {
   const [url, setUrl] = useState('');
