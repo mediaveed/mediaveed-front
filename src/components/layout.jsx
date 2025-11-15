@@ -3,24 +3,27 @@ import { Navbar, Nav, Container } from 'react-bootstrap';
 import './components.css';
 
 
-const Layout = ({ children }) => {
-  const [activeLink, setActiveLink] = useState('home');
+const Layout = ({ children, currentPage = 'home', onNavigate }) => {
+  const [isScrolled, setIsScrolled] = useState(false);
 
-  // Set active link based on current hash
   useEffect(() => {
-    const handleHashChange = () => {
-      const hash = window.location.hash.replace('#', '') || 'home';
-      setActiveLink(hash);
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
     };
 
-    handleHashChange();
-    window.addEventListener('hashchange', handleHashChange);
+    handleScroll();
+    window.addEventListener('scroll', handleScroll);
     
-    return () => window.removeEventListener('hashchange', handleHashChange);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, []);
 
-  const handleNavClick = (link) => {
-    setActiveLink(link);
+  const handleNavClick = (event, link) => {
+    event.preventDefault();
+    if (onNavigate) {
+      onNavigate(link);
+    }
   };
 
   return (
@@ -32,18 +35,12 @@ const Layout = ({ children }) => {
       <div className="background-pattern"></div>
 
       {/* Navbar */}
-      <Navbar variant="dark" expand="lg" className="custom-navbar">
+      <Navbar variant="dark" expand="lg" className={`custom-navbar ${isScrolled ? 'navbar-scrolled' : ''}`}>
         <Container>
-          <Navbar.Brand href="/" className="brand-logo">
-            <i 
-              className="bi bi-film m-2" 
-              style={{ 
-                fontSize: '1.8rem', 
-                color: '#ffffff' 
-              }}
-            ></i>
+          <Navbar.Brand href="/" className="brand-logo" onClick={(e) => handleNavClick(e, 'home')}>
+          
             <span className="logo-text">
-              MediaVeed<span className="logo-dot">.</span>
+              <img src="/images/logo.png" alt=""/><span className="logo-dot">.</span>
             </span>
           </Navbar.Brand>
 
@@ -55,36 +52,44 @@ const Layout = ({ children }) => {
           <Navbar.Collapse id="basic-navbar-nav">
             <Nav className="ms-auto nav-links">
               <Nav.Link 
-                href="/" 
-                className={activeLink === 'home' ? 'active' : ''}
-                onClick={() => handleNavClick('home')}
+                href="#home" 
+                className={currentPage === 'home' ? 'active' : ''}
+                onClick={(e) => handleNavClick(e, 'home')}
               >
                 <i className="bi bi-house-door-fill p-1"></i>
                 Home
               </Nav.Link>
               <Nav.Link 
                 href="#features"
-                className={activeLink === 'features' ? 'active' : ''}
-                onClick={() => handleNavClick('features')}
+                className={currentPage === 'features' ? 'active' : ''}
+                onClick={(e) => handleNavClick(e, 'features')}
               >
                 <i className="bi bi-stars p-1"></i>
                 Features
               </Nav.Link>
               <Nav.Link 
                 href="#how-it-works"
-                className={activeLink === 'how-it-works' ? 'active' : ''}
-                onClick={() => handleNavClick('how-it-works')}
+                className={currentPage === 'how-it-works' ? 'active' : ''}
+                onClick={(e) => handleNavClick(e, 'how-it-works')}
               >
                 <i className="bi bi-gear-fill p-1"></i>
                 How It Works
               </Nav.Link>
               <Nav.Link 
                 href="#supported"
-                className={activeLink === 'supported' ? 'active' : ''}
-                onClick={() => handleNavClick('supported')}
+                className={currentPage === 'supported' ? 'active' : ''}
+                onClick={(e) => handleNavClick(e, 'supported')}
               >
                 <i className="bi bi-check-circle-fill p-1"></i>
                 Supported
+              </Nav.Link>
+              <Nav.Link 
+                href="#blog"
+                className={currentPage === 'blog' ? 'active' : ''}
+                onClick={(e) => handleNavClick(e, 'blog')}
+              >
+                <i className="bi bi-journal-text p-1"></i>
+                Blog
               </Nav.Link>
             </Nav>
           </Navbar.Collapse>
@@ -105,15 +110,16 @@ const Layout = ({ children }) => {
               <span>For personal use only. Respect copyright laws.</span>
             </div>
             <div className="footer-links">
-              <a href="#privacy">Privacy</a>
-              <a href="#terms">Terms</a>
-              <a href="#contact">Contact</a>
-              <a href="#faq">FAQ</a>
+              <button type="button" className="footer-link" onClick={(e) => handleNavClick(e, 'home')}>Home</button>
+              <button type="button" className="footer-link" onClick={(e) => handleNavClick(e, 'features')}>Features</button>
+              <button type="button" className="footer-link" onClick={(e) => handleNavClick(e, 'how-it-works')}>How It Works</button>
+              <button type="button" className="footer-link" onClick={(e) => handleNavClick(e, 'supported')}>Supported</button>
+              <button type="button" className="footer-link" onClick={(e) => handleNavClick(e, 'blog')}>Blog</button>
             </div>
           </div>
           <div className="text-center mt-3" style={{ color: '#94a3b8', fontSize: '0.85rem' }}>
             <p className="mb-0">
-              © {new Date().getFullYear()} VideoGrab. Made with{' '}
+              © {new Date().getFullYear()} MediaVeed. Made with{' '}
               <i className="bi bi-heart-fill" style={{ color: '#ec4899' }}></i>
               {' '}for content creators
             </p>

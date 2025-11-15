@@ -35,12 +35,13 @@ const UrlInput = ({ url, setUrl, onSubmit }) => {
               color: isFocused ? "#3b82f6" : "#6b7280",
               transition: "color 0.3s ease",
               zIndex: 2,
+              marginRight: "19px"
             }}
           />
 
           <Form.Control
             type="url"
-            placeholder="Paste video link here (YouTube, TikTok, Instagram...)"
+            placeholder="Paste video link here"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             onFocus={() => setIsFocused(true)}

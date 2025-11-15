@@ -2,15 +2,21 @@
    NAVBAR STYLES
 ============================= */
 .custom-navbar {
-  background: linear-gradient(180deg, rgba(17, 24, 39, 0.98) 0%, rgba(17, 24, 39, 0.95) 100%);
+   background: linear-gradient(180deg, rgba(17, 24, 39, 0.98) 0%, rgba(17, 24, 39, 0.95) 100%);
   backdrop-filter: blur(20px) saturate(180%);
   border-bottom: 1px solid rgba(59, 130, 246, 0.15);
-  padding: 1rem 0;
+  padding: 0.4rem 0;
   position: sticky;
   top: 0;
   z-index: 1000;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
   transition: all 0.3s ease;
+}
+  
+.navbar-scrolled {
+  background: transparent;
+  border-bottom: 1px solid transparent;
+  box-shadow: none;
+  backdrop-filter: none;
 }
 
 .custom-navbar::after {
@@ -27,8 +33,11 @@
     #3b82f6 80%, 
     transparent 100%
   );
-  opacity: 0.5;
+  opacity: 0;
   animation: borderSlide 3s ease-in-out infinite;
+}
+.navbar-scrolled::after {
+  opacity: 0.8;
 }
 
 @keyframes borderSlide {
@@ -56,9 +65,9 @@
   align-items: center;
   gap: 0.5rem;
   transition: all 0.3s ease;
-  padding: 0.5rem 1rem;
+  padding: 0.1rem 0.1rem;
   border-radius: 12px;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(253, 183, 20, 0.05));
+  background: none;
 }
 
 .brand-logo:hover {
@@ -70,14 +79,22 @@
 
 .logo-text {
   color: #f8fafc;
-  font-weight: 700;
-  letter-spacing: -0.5px;
+  display: flex;
+  align-items: center;
+  
 }
 
 .logo-dot {
   color: #6d14fd;
   font-size: 2rem;
   animation: pulse-dot 2s ease-in-out infinite;
+}
+
+.logo-text img {
+  width: 150px;
+  height: 125px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 10px rgba(109, 20, 253, 0.4));
 }
 
 @keyframes pulse-dot {
@@ -248,18 +265,21 @@
   display: flex;
   gap: 2rem;
   flex-wrap: wrap;
+  justify-content: center;
 }
 
-.footer-links a {
+.footer-link {
+  background: none;
+  border: none;
   color: var(--text-secondary);
-  text-decoration: none;
   font-size: 0.9rem;
   transition: all 0.3s ease;
   position: relative;
   padding: 0.25rem 0;
+  cursor: pointer;
 }
 
-.footer-links a::after {
+.footer-link::after {
   content: '';
   position: absolute;
   bottom: 0;
@@ -270,12 +290,12 @@
   transition: width 0.3s ease;
 }
 
-.footer-links a:hover {
+.footer-link:hover {
   color: var(--primary-yellow);
   transform: translateY(-2px);
 }
 
-.footer-links a:hover::after {
+.footer-link:hover::after {
   width: 100%;
 }
 
