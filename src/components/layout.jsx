@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Navbar, Nav, Container } from 'react-bootstrap';
+import { Navbar, Nav, NavDropdown, Container } from 'react-bootstrap';
 import './components.css';
 
+const showHighlightAdmin = import.meta.env.VITE_SHOW_HIGHLIGHT_ADMIN === 'true';
 
 const Layout = ({ children, currentPage = 'home', onNavigate }) => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -83,6 +84,44 @@ const Layout = ({ children, currentPage = 'home', onNavigate }) => {
                 <i className="bi bi-check-circle-fill p-1"></i>
                 Supported
               </Nav.Link>
+              <NavDropdown
+                title={(
+                  <span>
+                    <i className="bi bi-tools p-1"></i>
+                    Tools &amp; Automation
+                  </span>
+                )}
+                id="tools-nav"
+                className={currentPage === 'highlight-tool' ? 'active-dropdown' : ''}
+              >
+                <NavDropdown.Item
+                  href="#tools-highlight"
+                  active={currentPage === 'highlight-tool'}
+                  onClick={(e) => handleNavClick(e, 'highlight-tool')}
+                >
+                  <div className="nav-tool-item">
+                    <div className="nav-tool-heading">
+                      <span>
+                        <i className="bi bi-magic p-1" />
+                        Highlight Generator
+                      </span>
+                      <span className="nav-tool-badge">Beta</span>
+                    </div>
+                    <small className="nav-tool-desc">AI-powered clip detection &amp; reel exports</small>
+                  </div>
+                </NavDropdown.Item>
+              </NavDropdown>
+              {showHighlightAdmin && (
+                <NavDropdown.Item
+                  href="#tools-highlight-admin"
+                  active={currentPage === 'highlight-admin'}
+                  onClick={(e) => handleNavClick(e, 'highlight-admin')}
+                  className="nav-admin-link"
+                >
+                  <i className="bi bi-activity p-1" />
+                  Recent Highlights (Ops)
+                </NavDropdown.Item>
+              )}
               <Nav.Link 
                 href="#blog"
                 className={currentPage === 'blog' ? 'active' : ''}
@@ -115,6 +154,7 @@ const Layout = ({ children, currentPage = 'home', onNavigate }) => {
               <button type="button" className="footer-link" onClick={(e) => handleNavClick(e, 'how-it-works')}>How It Works</button>
               <button type="button" className="footer-link" onClick={(e) => handleNavClick(e, 'supported')}>Supported</button>
               <button type="button" className="footer-link" onClick={(e) => handleNavClick(e, 'blog')}>Blog</button>
+              <button type="button" className="footer-link" onClick={(e) => handleNavClick(e, 'highlight-tool')}>Highlight Generator</button>
             </div>
           </div>
           <div className="text-center mt-3" style={{ color: '#94a3b8', fontSize: '0.85rem' }}>

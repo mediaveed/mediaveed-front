@@ -8,7 +8,7 @@ import './home.css';
 import DownloadOptions from '../components/downloadbutton';
 import { TopBannerAd, MidBannerAd, MiddleBannerAd, FooterBannerAd, ResponsiveAdWrapper } from '../components/Adbanner';
 
-export default function Home() {
+export default function Home({ onNavigate = () => {} }) {
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState(null);
@@ -159,6 +159,7 @@ export default function Home() {
                 />
               )}
 
+
               <div className="supported-platforms">
                 <p className="platforms-label">Supported Platforms:</p>
                 <div className="platforms-list">
@@ -213,6 +214,23 @@ export default function Home() {
                   <h3>Unlimited</h3>
                   <p>Download as many videos as you want, no limits</p>
                 </div>
+              </div>
+
+              <div className="highlight-tool-cta">
+                <div>
+                  <p className="cta-eyebrow">NEW • Highlight Generator</p>
+                  <h3>Send downloads straight into our AI highlight engine</h3>
+                  <p>
+                    Automatically detect high-energy moments, curate reels, and export MP4/SRT timelines from one workspace.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="cta-button"
+                  onClick={() => onNavigate('highlight-tool')}
+                >
+                  Launch Highlight Tool
+                </button>
               </div>
             </div>
 

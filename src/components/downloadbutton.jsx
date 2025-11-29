@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Button, ButtonGroup, Card } from "react-bootstrap";
+import { Button, ButtonGroup, Card, Modal } from "react-bootstrap";
 import { Loader2, CheckCircle, AlertCircle, Download, Music } from "lucide-react";
 import PlatformBadge from "./platformbadge";
 import "./components.css";
@@ -11,6 +11,9 @@ const DownloadOptions = ({ proxyUrl, title, platform, backendRoot, thumbnail, or
   const [error, setError] = useState(null);
   const [progressVideo, setProgressVideo] = useState(0);
   const [progressAudio, setProgressAudio] = useState(0);
+  const [toolPanelVisible, setToolPanelVisible] = useState(false);
+  const [lastDownloadInfo, setLastDownloadInfo] = useState(null);
+  const [showToolModal, setShowToolModal] = useState(false);
   const progressTimers = useRef({ video: null, audio: null });
 
   useEffect(() => {
@@ -167,6 +170,19 @@ const DownloadOptions = ({ proxyUrl, title, platform, backendRoot, thumbnail, or
       setDone(true);
       console.log(`✅ ${kind} download completed`);
       success = true;
+      const info = {
+        title,
+        platform,
+        originalUrl,
+        downloadUrl: fetchUrl,
+        kind,
+        completedAt: Date.now(),
+      };
+      localStorage.setItem('mediaveed_last_download', JSON.stringify(info));
+      window.dispatchEvent(new CustomEvent('mediaveed:downloadComplete', { detail: info }));
+      setLastDownloadInfo(info);
+      setToolPanelVisible(true);
+      setShowToolModal(true);
 
     } catch (err) {
       console.error(`❌ ${kind} download failed:`, err);
@@ -215,6 +231,13 @@ const DownloadOptions = ({ proxyUrl, title, platform, backendRoot, thumbnail, or
     }
 
     return `${backendRoot}/${thumbnail}`;
+  };
+
+  const handleOpenHighlightTool = () => {
+    if (lastDownloadInfo) {
+      localStorage.setItem('mediaveed_last_download', JSON.stringify(lastDownloadInfo));
+    }
+    window.dispatchEvent(new CustomEvent('mediaveed:navigate', { detail: 'highlight-tool' }));
   };
 
   return (
@@ -484,6 +507,38 @@ const DownloadOptions = ({ proxyUrl, title, platform, backendRoot, thumbnail, or
             <i className="bi bi-shield-check" style={{ color: "#10b981" }}></i>
             <span>Best quality • Safe • Fast download</span>
           </div>
+
+          <Modal
+            show={showToolModal}
+            centered
+            backdrop="static"
+            keyboard={false}
+            dialogClassName="mediaveed-modal"
+            onHide={() => setShowToolModal(false)}
+          >
+            <Modal.Header closeButton>
+              <Modal.Title>Continue in MediaVeed</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              <p className="mb-2">
+                {lastDownloadInfo?.title || title || 'Your video'} is ready for highlight detection.
+              </p>
+              <p className="text-muted mb-0">
+                Jump into the Highlight Generator to analyze and stitch this clip automatically.
+              </p>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button variant="outline-secondary" onClick={() => setShowToolModal(false)}>
+                Stay here
+              </Button>
+              <Button variant="primary" onClick={() => {
+                setShowToolModal(false);
+                handleOpenHighlightTool();
+              }}>
+                Open Highlight Tool
+              </Button>
+            </Modal.Footer>
+          </Modal>
         </Card.Body>
       </Card>
     </div>

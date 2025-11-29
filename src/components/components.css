@@ -188,6 +188,91 @@
   width: 100%;
 }
 
+.nav-links .dropdown-toggle {
+  color: #e2e8f0 !important;
+  font-weight: 500;
+  font-size: 0.95rem;
+  padding: 0.75rem 1.25rem !important;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.nav-tool-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.nav-tool-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #f8fafc;
+  font-weight: 600;
+}
+
+.nav-tool-heading i {
+  margin-right: 0.35rem;
+}
+
+.nav-tool-badge {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.2rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(59, 130, 246, 0.18);
+  color: #93c5fd;
+}
+
+.nav-tool-desc {
+  color: #cbd5f5;
+  display: block;
+}
+
+.nav-admin-link {
+  border-top: 1px solid rgba(59, 130, 246, 0.15);
+  margin-top: 0.5rem;
+  padding-top: 0.75rem !important;
+  font-size: 0.85rem;
+  color: #f87171 !important;
+}
+
+.nav-links .dropdown-toggle::after {
+  margin-left: 0.35rem;
+}
+
+.nav-links .dropdown-menu {
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 14px;
+  box-shadow: 0 25px 45px rgba(2, 6, 23, 0.6);
+  padding: 0.5rem;
+}
+
+.nav-links .dropdown-item {
+  color: #e2e8f0;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.nav-links .dropdown-item:hover,
+.nav-links .dropdown-item:focus,
+.nav-links .dropdown-item.active {
+  background: rgba(59, 130, 246, 0.15);
+  color: var(--primary-blue);
+}
+
+.active-dropdown > .dropdown-toggle {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(253, 183, 20, 0.15));
+  color: #8114fd !important;
+  font-weight: 600;
+}
+
 /* Mobile menu toggle - FIXED VISIBILITY */
 .navbar-toggler {
   border-color: rgba(59, 130, 246, 0.5) !important;
@@ -526,4 +611,33 @@
   .footer-links a {
     font-size: 0.85rem;
   }
+}
+
+/* Highlight follow-up panel */
+.tool-panel {
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+  border-radius: 16px;
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  box-shadow: 0 18px 35px rgba(2, 6, 23, 0.4);
+}
+
+.tool-panel__label {
+  margin: 0 0 0.75rem;
+  color: rgba(226, 232, 240, 0.9);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+}
+
+.tool-panel__button {
+  border-radius: 999px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.04em;
+  padding: 0.6rem 1.4rem !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
 }
