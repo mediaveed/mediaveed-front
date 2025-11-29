@@ -46,8 +46,8 @@ const HighlightDashboard = ({
   autoVideoDownloadUrl = '',
   autoVideoTitle = '',
   autoVideoCompletedAt = null,
-  showBackButton = false,
-  onBack,
+  // showBackButton = false,
+  // onBack,
   onAutoProcessingComplete,
 }) => {
   const {
@@ -150,13 +150,13 @@ const HighlightDashboard = ({
 
   return (
     <div className="gold-app">
-      {showBackButton && typeof onBack === 'function' && (
+      {/* {showBackButton && typeof onBack === 'function' && (
         <div className="mediaveed-back-row">
           <button type="button" className="mediaveed-back-button" onClick={onBack}>
             ← Back
           </button>
         </div>
-      )}
+      )} */}
       {autoProcessingActive && (
         <HighlightStatusCard
           variant="processing"
