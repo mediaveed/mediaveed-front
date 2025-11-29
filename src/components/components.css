@@ -199,6 +199,40 @@
   gap: 0.5rem;
 }
 
+/* =============================
+   Modal Styling
+============================= */
+.mediaveed-modal .modal-content {
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  border-radius: 20px;
+  box-shadow: 0 30px 60px rgba(2, 6, 23, 0.6);
+  color: #f8fafc;
+}
+
+.mediaveed-modal .modal-header,
+.mediaveed-modal .modal-footer {
+  border-color: rgba(59, 130, 246, 0.2);
+}
+
+.mediaveed-modal .modal-title {
+  color: #f8fafc;
+}
+
+.mediaveed-modal .modal-body p {
+  color: #cbd5e1;
+}
+
+.mediaveed-modal .btn-outline-secondary {
+  border-color: rgba(148, 163, 184, 0.5);
+  color: #e2e8f0;
+}
+
+.mediaveed-modal .btn-outline-secondary:hover {
+  border-color: rgba(59, 130, 246, 0.8);
+  color: #3b82f6;
+}
+
 .nav-tool-item {
   display: flex;
   flex-direction: column;

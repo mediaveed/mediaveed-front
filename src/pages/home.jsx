@@ -79,14 +79,7 @@ export default function Home({ onNavigate = () => {} }) {
 
   return (
     <div className="home-page">
-      {/* TOP BANNER AD */}
-      <div className="ad-section ad-section-top">
-        <Container>
-          <ResponsiveAdWrapper type="top">
-            <TopBannerAd />
-          </ResponsiveAdWrapper>
-        </Container>
-      </div>
+ 
 
       <Container>
         <Row className="justify-content-center">
@@ -239,12 +232,7 @@ export default function Home({ onNavigate = () => {} }) {
               <p>WE DO NOT ALLOW/SUPPORT THE DOWNLOAD OF COPYRIGHTED MATERIAL!</p>
             </div>
 
-            {/* FOOTER AD */}
-            <div className="ad-section ad-section-footer">
-              <ResponsiveAdWrapper type="footer">
-                <FooterBannerAd />
-              </ResponsiveAdWrapper>
-            </div>
+    
           </Col>
         </Row>
       </Container>

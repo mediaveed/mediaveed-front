@@ -56,13 +56,29 @@ const StackGlyph = ({ className = '' }) => (
   </svg>
 );
 
+const formatFileSize = (bytes = 0) => {
+  if (!bytes) return '0 MB';
+  const mb = bytes / (1024 * 1024);
+  if (mb < 1024) {
+    return `${mb.toFixed(2)} MB`;
+  }
+  const gb = mb / 1024;
+  return `${gb.toFixed(2)} GB`;
+};
+
 const HighlightUploadPanel = ({ isProcessing, error, statusMessage, onFileSelected }) => {
   const [isDragging, setIsDragging] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
   const fileInputRef = useRef(null);
 
   const handleFiles = (files) => {
     if (!files?.length) return;
     const file = files[0];
+    setSelectedFile({
+      name: file.name,
+      sizeLabel: formatFileSize(file.size),
+      overLimit: file.size > MAX_UPLOAD_MB * 1024 * 1024,
+    });
     onFileSelected?.(file);
   };
 
@@ -137,6 +153,25 @@ const HighlightUploadPanel = ({ isProcessing, error, statusMessage, onFileSelect
             AI scoring + FFmpeg stitching
           </span>
         </div>
+
+        {selectedFile && (
+          <div
+            className={`file-preview-pill ${
+              selectedFile.overLimit ? 'file-preview-pill--error' : ''
+            }`}
+          >
+            <div>
+              <p className="mb-0 text-light fw-semibold">{selectedFile.name}</p>
+              <small className="text-muted-luxe">
+                {selectedFile.sizeLabel}{' '}
+                {selectedFile.overLimit && `• exceeds ${MAX_UPLOAD_MB}MB limit`}
+              </small>
+            </div>
+            <span className="file-size-tag">
+              {selectedFile.overLimit ? 'Too large' : 'Looks good'}
+            </span>
+          </div>
+        )}
 
         {isProcessing && (
           <p className="status-text">Processing… keep this tab open.</p>

@@ -28,6 +28,42 @@ const captureHighlightError = (error, context) => {
   }
 };
 
+const deriveFriendlyMessage = (message, status) => {
+  const normalized = (message || '').toLowerCase();
+  if (status === 413 || normalized.includes('too large')) {
+    return `That file exceeds the ${MAX_UPLOAD_MB}MB limit. Trim your clip and try again.`;
+  }
+  if (status === 422 || normalized.includes('too long')) {
+    return 'This clip is longer than our current limit. Please trim the video and retry.';
+  }
+  if (status === 404 || normalized.includes('not found')) {
+    return 'We could not find that highlight session. Please re-upload your video.';
+  }
+  if (status === 500 || normalized.includes('analysis failed') || normalized.includes('failed to create highlight')) {
+    return 'We hit a processing snag. Please retry with a different clip or try again in a few minutes.';
+  }
+  if (normalized.includes('invalid api key')) {
+    return 'Your session expired. Refresh and sign back in to continue.';
+  }
+  return message || 'Something went wrong. Please try again.';
+};
+
+const parseErrorResponse = async (response, fallback) => {
+  let payload = null;
+  try {
+    payload = await response.json();
+  } catch {
+    // ignore parse issues
+  }
+  const detail = payload?.detail ?? payload;
+  let baseMessage =
+    typeof detail === 'string' ? detail : detail?.error || detail?.message || fallback;
+  if (detail?.tip) {
+    baseMessage = `${baseMessage}${baseMessage ? ' — ' : ''}${detail.tip}`;
+  }
+  return deriveFriendlyMessage(baseMessage, response.status);
+};
+
 const useHighlightEngine = () => {
   // Analysis state
   const [result, setResult] = useState(null);
@@ -90,13 +126,7 @@ const useHighlightEngine = () => {
       setStatus('Analyzing video…');
 
       if (!response.ok) {
-        let errorMessage = 'Failed to analyze video';
-        try {
-          const detail = await response.json();
-          errorMessage = detail?.detail?.error || detail?.detail || errorMessage;
-        } catch {
-          errorMessage = `Server error: ${response.status} ${response.statusText}`;
-        }
+        const errorMessage = await parseErrorResponse(response, 'Failed to analyze video');
         throw new Error(errorMessage);
       }
 
@@ -114,7 +144,10 @@ const useHighlightEngine = () => {
     } catch (err) {
       console.error('Upload error:', err);
       captureHighlightError(err, 'analyze_upload');
-      setError(err.message || 'An unexpected error occurred');
+      const fallback = err?.message?.includes('Failed to fetch')
+        ? 'Unable to reach the highlight engine. Check your connection and try again.'
+        : err?.message;
+      setError(fallback || 'An unexpected error occurred');
       setStatus('');
       setSelectedSegments([]);
     } finally {
@@ -169,13 +202,7 @@ const useHighlightEngine = () => {
       );
 
       if (!response.ok) {
-        let errorMessage = 'Failed to create highlight reel';
-        try {
-          const detail = await response.json();
-          errorMessage = detail?.detail?.error || detail?.detail || errorMessage;
-        } catch {
-          errorMessage = `Server error: ${response.status} ${response.statusText}`;
-        }
+        const errorMessage = await parseErrorResponse(response, 'Failed to create highlight reel');
         throw new Error(errorMessage);
       }
 
@@ -184,7 +211,10 @@ const useHighlightEngine = () => {
     } catch (err) {
       console.error('Reel creation error:', err);
       captureHighlightError(err, 'create_reel');
-      setReelError(err.message || 'An unexpected error occurred');
+      const friendly = err?.message?.includes('Failed to fetch')
+        ? 'Unable to reach the highlight engine. Please try again shortly.'
+        : err?.message;
+      setReelError(friendly || 'An unexpected error occurred');
     } finally {
       setReelLoading(false);
     }
@@ -209,7 +239,8 @@ const useHighlightEngine = () => {
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to download file: ${response.statusText}`);
+        const message = await parseErrorResponse(response, 'Failed to download file');
+        throw new Error(message);
       }
 
       const blob = await response.blob();
@@ -223,7 +254,10 @@ const useHighlightEngine = () => {
     } catch (err) {
       console.error('Download error:', err);
       captureHighlightError(err, 'download_asset');
-      setReelError(`Download failed: ${err.message}`);
+      const friendly = err?.message?.includes('Failed to fetch')
+        ? 'Download failed because the server could not be reached. Please try again.'
+        : err?.message;
+      setReelError(friendly || 'Download failed. Please try again.');
     }
   }, []);
 

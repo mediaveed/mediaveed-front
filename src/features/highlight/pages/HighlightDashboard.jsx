@@ -3,6 +3,7 @@ import { Container, Row, Col, Card, Button, Badge, Spinner } from 'react-bootstr
 import HighlightUploadPanel from '../components/HighlightUploadPanel';
 import HighlightStatusCard from '../components/HighlightStatusCard';
 import HighlightFeedbackCTA from '../components/HighlightFeedbackCTA';
+import ProcessingStatusList from '../components/ProcessingStatusList';
 import useHighlightEngine from '../hooks/useHighlightEngine';
 
 const stats = [
@@ -231,14 +232,19 @@ const HighlightDashboard = ({
 
       <Container className="mb-5">
         {processing && (
-          <section className="processing-panel text-center my-5">
-            <div className="loader-gold large" aria-hidden="true" />
-            <p className="text-light fw-semibold mt-3 mb-1">
-              {status || 'Processing your video…'}
-            </p>
-            <p className="text-muted-luxe mb-0">
-              This can take up to a minute — keep this tab open.
-            </p>
+          <section className="processing-panel my-5" aria-live="polite">
+            <div className="processing-panel__header">
+              <div className="loader-gold large" aria-hidden="true" />
+              <div className="flex-grow-1">
+                <p className="processing-panel__title mb-1">
+                  {status || 'Processing your video…'}
+                </p>
+                <p className="text-muted-luxe mb-0">
+                  This can take up to a minute — keep this tab open.
+                </p>
+              </div>
+            </div>
+            <ProcessingStatusList processing={processing} statusMessage="Realtime analysis log" />
           </section>
         )}
 

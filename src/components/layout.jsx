@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Navbar, Nav, NavDropdown, Container } from 'react-bootstrap';
+import { TopBannerAd, FooterBannerAd, ResponsiveAdWrapper } from './Adbanner';
 import './components.css';
 
 const showHighlightAdmin = import.meta.env.VITE_SHOW_HIGHLIGHT_ADMIN === 'true';
@@ -29,6 +30,7 @@ const Layout = ({ children, currentPage = 'home', onNavigate }) => {
 
   return (
     <div className="main-container">
+     
       <div className="gradient-orb gradient-orb-1"></div>
       <div className="gradient-orb gradient-orb-2"></div>
       <div className="gradient-orb gradient-orb-3"></div>
@@ -137,8 +139,24 @@ const Layout = ({ children, currentPage = 'home', onNavigate }) => {
 
       {/* Main Content */}
       <div className="content-wrapper">
+        {/* TOP BANNER AD */}
+        <div className="ad-section ad-section-top">
+          <Container>
+            <ResponsiveAdWrapper type="top">
+              <TopBannerAd />
+            </ResponsiveAdWrapper>
+          </Container>
+        </div>
         {children}
+        {/* FOOTER AD */}
+        <div className="ad-section ad-section-footer">
+          <ResponsiveAdWrapper type="footer">
+            <FooterBannerAd />
+          </ResponsiveAdWrapper>
+        </div>
       </div>
+
+    
 
       {/* Footer */}
       <footer className="custom-footer">
