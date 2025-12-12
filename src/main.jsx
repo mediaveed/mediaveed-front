@@ -4,6 +4,7 @@ import * as Sentry from '@sentry/react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import App from './App.jsx';
+import { initAnalytics, startAuthWatcher } from './utils/analytics.js';
 
 const sentryDsn = import.meta.env.VITE_SENTRY_DSN;
 if (sentryDsn) {
@@ -19,6 +20,9 @@ if (sentryDsn) {
     tracesSampleRate: Number(import.meta.env.VITE_SENTRY_TRACES_SAMPLE_RATE || 0.1),
   });
 }
+
+initAnalytics();
+startAuthWatcher();
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { trackButtonClick } from '../../../utils/analytics.js';
 
 const guideItems = [
   {
@@ -30,7 +31,10 @@ const HighlightGuide = ({ feedbackUrl }) => (
         <button
           type="button"
           className="cta-button secondary"
-          onClick={() => window.open(feedbackUrl, '_blank')}
+          onClick={() => {
+            trackButtonClick('highlight-read-checklist', { location: 'highlight_guide' });
+            window.open(feedbackUrl, '_blank');
+          }}
         >
           Read beta checklist
         </button>

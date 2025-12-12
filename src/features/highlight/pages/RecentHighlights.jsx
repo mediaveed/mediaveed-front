@@ -60,6 +60,36 @@ const RecentHighlights = () => {
     return `${num.toFixed(1)}s`;
   };
 
+  const formatMs = (value) => {
+    if (!value && value !== 0) return '—';
+    const seconds = Number(value) / 1000;
+    if (!Number.isFinite(seconds)) return '—';
+    if (seconds >= 60) {
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.round(seconds % 60);
+      return `${mins}m ${secs.toString().padStart(2, '0')}s`;
+    }
+    return `${seconds.toFixed(1)}s`;
+  };
+
+  const renderFlags = (diagnostics = {}) => {
+    const flags = [];
+    if (diagnostics.fallback_segment) {
+      flags.push({ label: 'Fallback', variant: 'warning' });
+    }
+    if (diagnostics.advanced_timeout) {
+      flags.push({ label: 'Seg timeout', variant: 'danger' });
+    }
+    if (!flags.length) {
+      return <Badge bg="secondary">Stable</Badge>;
+    }
+    return flags.map((flag) => (
+      <Badge bg={flag.variant} key={flag.label} className="me-1">
+        {flag.label}
+      </Badge>
+    ));
+  };
+
   return (
     <section className="highlight-embed">
       <div className="highlight-embed__header">
@@ -105,14 +135,14 @@ const RecentHighlights = () => {
                 <thead>
                   <tr>
                     <th>Session</th>
-                    <th>User</th>
-                    <th>Reference</th>
+                    <th>Ingest</th>
                     <th>Segments</th>
                     <th>Video</th>
-                    <th>Reel</th>
-                    <th>Created</th>
                     <th>Status</th>
-                    <th>Latency</th>
+                    <th>Segmentation</th>
+                    <th>Reel build</th>
+                    <th>Flags</th>
+                    <th>Created</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -122,29 +152,52 @@ const RecentHighlights = () => {
                         <code>{session.session_id}</code>
                       </td>
                       <td>
-                        {session.user?.email || session.user?.id || '—'}
-                      </td>
-                      <td>{session.reference || '—'}</td>
-                      <td>{session.segment_count ?? '—'}</td>
-                      <td>{formatSeconds(session.video_duration)}</td>
-                      <td>
-                        {session.style?.label ? (
-                          <span>{session.style.label}</span>
-                        ) : (
-                          '—'
+                        <div className="text-light fw-semibold">
+                          {session.user?.email || session.user?.id || '—'}
+                        </div>
+                        <small className="text-muted-luxe d-block">
+                          {(session.ingest?.source || session.source || 'upload').toUpperCase()} •{' '}
+                          {session.ingest?.platform?.toUpperCase() || 'direct'}
+                        </small>
+                        {session.ingest?.download_ms && (
+                          <small className="text-muted-luxe d-block">
+                            DL {formatMs(session.ingest.download_ms)}
+                          </small>
                         )}
                       </td>
-                      <td>{formatTimestamp(session.created_at)}</td>
+                      <td>
+                        <div>{session.segment_count ?? '—'} clips</div>
+                        <small className="text-muted-luxe">
+                          {session.reference || 'Untitled source'}
+                        </small>
+                      </td>
+                      <td>
+                        {formatSeconds(session.video_duration)}
+                        {session.reel_duration && (
+                          <div className="text-muted-luxe small">
+                            Reel {formatSeconds(session.reel_duration)}
+                          </div>
+                        )}
+                      </td>
                       <td>
                         <Badge bg={session.status === 'reel_ready' ? 'success' : 'secondary'}>
                           {session.status || 'pending'}
                         </Badge>
                       </td>
                       <td>
-                        {session.processing_time_ms
-                          ? formatSeconds(session.processing_time_ms / 1000)
-                          : '—'}
+                        <div>{formatMs(session.processing_time_ms)}</div>
+                        <small className="text-muted-luxe">
+                          Adv seg {formatMs(session.diagnostics?.advanced_segmentation_ms)}
+                        </small>
                       </td>
+                      <td>
+                        {session.reel_latency_ms ? formatMs(session.reel_latency_ms) : '—'}
+                        {session.style?.label && (
+                          <small className="text-muted-luxe d-block">{session.style.label}</small>
+                        )}
+                      </td>
+                      <td>{renderFlags(session.diagnostics)}</td>
+                      <td>{formatTimestamp(session.created_at)}</td>
                     </tr>
                   ))}
                 </tbody>

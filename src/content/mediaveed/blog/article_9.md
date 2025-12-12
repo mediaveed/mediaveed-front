@@ -1,0 +1,1 @@
+Article 9 placeholder. Full article provided in chat transcript.

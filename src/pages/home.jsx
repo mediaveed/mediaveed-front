@@ -6,7 +6,14 @@ import Loader from '../components/loader';
 import { extractVideo, detectPlatform } from '../api/extractor';
 import './home.css';
 import DownloadOptions from '../components/downloadbutton';
-import { TopBannerAd, MidBannerAd, MiddleBannerAd, FooterBannerAd, ResponsiveAdWrapper } from '../components/Adbanner';
+import {
+  TopBannerAd,
+  MidBannerAd,
+  MiddleBannerAd,
+  FooterBannerAd,
+  ResponsiveAdWrapper,
+} from '../components/Adbanner';
+import { trackButtonClick, trackDownloaderEvent, trackNavigation } from '../utils/analytics.js';
 
 export default function Home({ onNavigate = () => {} }) {
   const [url, setUrl] = useState('');
@@ -16,9 +23,11 @@ export default function Home({ onNavigate = () => {} }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    trackButtonClick('download-submit', { location: 'home_input' });
 
     if (!url.trim()) {
       setError("Please enter a valid URL");
+      trackDownloaderEvent('invalid_input', { reason: 'empty_url' });
       return;
     }
 
@@ -26,9 +35,11 @@ export default function Home({ onNavigate = () => {} }) {
     const platform = detectPlatform(url);
     if (!platform) {
       setError("Unsupported platform. Please use YouTube, TikTok, Instagram, or Twitter URLs.");
+      trackDownloaderEvent('unsupported_platform', { url_length: url.length });
       return;
     }
 
+    trackDownloaderEvent('request', { platform, url_length: url.length });
     setLoading(true);
     setError(null);
     setData(null);
@@ -52,6 +63,11 @@ export default function Home({ onNavigate = () => {} }) {
       // Set the data
       setData(result);
       console.log('✅ Video data loaded successfully');
+      trackDownloaderEvent('success', {
+        platform,
+        has_proxy: Boolean(result.proxy_url),
+        title: result.title,
+      });
 
     } catch (err) {
       console.error('❌ Extraction error:', err);
@@ -66,6 +82,10 @@ export default function Home({ onNavigate = () => {} }) {
       }
 
       setError(errorMessage);
+      trackDownloaderEvent('error', {
+        platform: platform || 'unknown',
+        message: errorMessage,
+      });
     } finally {
       setLoading(false);
     }
@@ -220,7 +240,11 @@ export default function Home({ onNavigate = () => {} }) {
                 <button
                   type="button"
                   className="cta-button"
-                  onClick={() => onNavigate('highlight-tool')}
+                  onClick={() => {
+                    trackButtonClick('launch-highlight-tool', { location: 'home_highlight_cta' });
+                    trackNavigation('highlight-tool', { source: 'home_highlight_cta' });
+                    onNavigate('highlight-tool');
+                  }}
                 >
                   Launch Highlight Tool
                 </button>

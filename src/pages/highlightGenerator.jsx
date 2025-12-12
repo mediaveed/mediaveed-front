@@ -3,6 +3,7 @@ import HighlightDashboard from '../features/highlight/pages/HighlightDashboard';
 import '../features/highlight/styles/highlight.css';
 import './highlightGenerator.css';
 import HighlightGuide from '../features/highlight/components/HighlightGuide';
+import { trackButtonClick, trackNavigation } from '../utils/analytics.js';
 
 const HighlightGenerator = () => {
   const readStoredDownload = () => {
@@ -22,6 +23,8 @@ const HighlightGenerator = () => {
   }, []);
 
   const handleBackToDownloader = useCallback(() => {
+    trackButtonClick('highlight-back-to-downloader', { location: 'highlight_generator' });
+    trackNavigation('home', { source: 'highlight_generator' });
     window.dispatchEvent(new CustomEvent('mediaveed:navigate', { detail: 'home' }));
   }, []);
 
@@ -55,7 +58,10 @@ const HighlightGenerator = () => {
             <button
               type="button"
               className="cta-button secondary"
-              onClick={() => window.open('mailto:support@mediaveed.com?subject=Highlight%20Beta')}
+              onClick={() => {
+                trackButtonClick('highlight-share-feedback', { location: 'highlight_generator' });
+                window.open('mailto:support@mediaveed.com?subject=Highlight%20Beta');
+              }}
             >
               Share feedback
             </button>
@@ -70,6 +76,8 @@ const HighlightGenerator = () => {
             autoVideoDownloadUrl={lastDownload?.downloadUrl}
             autoVideoTitle={lastDownload?.title}
             autoVideoCompletedAt={lastDownload?.completedAt}
+            autoVideoPlatform={lastDownload?.platform}
+            autoVideoKind={lastDownload?.kind}
             onAutoProcessingComplete={clearLastDownload}
             showBackButton
             onBack={handleBackToDownloader}

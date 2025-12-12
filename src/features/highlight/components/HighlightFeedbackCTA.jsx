@@ -1,4 +1,5 @@
 import React from 'react';
+import { trackButtonClick } from '../../../utils/analytics.js';
 
 const HighlightFeedbackCTA = ({ sessionId, title }) => {
   const feedbackUrl = import.meta.env.VITE_HIGHLIGHT_FEEDBACK_URL;
@@ -21,7 +22,10 @@ const HighlightFeedbackCTA = ({ sessionId, title }) => {
       <button
         type="button"
         className="cta-button secondary"
-        onClick={() => window.open(href, '_blank')}
+        onClick={() => {
+          trackButtonClick('highlight-feedback-submit', { location: 'highlight_feedback_cta' });
+          window.open(href, '_blank');
+        }}
       >
         Submit feedback
       </button>

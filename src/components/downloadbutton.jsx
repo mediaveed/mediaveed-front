@@ -3,6 +3,7 @@ import { Button, ButtonGroup, Card, Modal } from "react-bootstrap";
 import { Loader2, CheckCircle, AlertCircle, Download, Music } from "lucide-react";
 import PlatformBadge from "./platformbadge";
 import "./components.css";
+import { trackButtonClick, trackDownloaderEvent, trackExportEvent, trackNavigation } from "../utils/analytics.js";
 
 const DownloadOptions = ({ proxyUrl, title, platform, backendRoot, thumbnail, originalUrl }) => {
   const [loadingVideo, setLoadingVideo] = useState(false);
@@ -54,6 +55,11 @@ const DownloadOptions = ({ proxyUrl, title, platform, backendRoot, thumbnail, or
   const handleDownload = async (kind = "video") => {
     let success = false;
     try {
+      trackExportEvent(`downloader_${kind}`, {
+        phase: "start",
+        platform,
+        title,
+      });
       if (kind === "video") setLoadingVideo(true);
       if (kind === "audio") setLoadingAudio(true);
       setDone(false);
@@ -169,6 +175,17 @@ const DownloadOptions = ({ proxyUrl, title, platform, backendRoot, thumbnail, or
       setDone(true);
       console.log(`✅ ${kind} download completed`);
       success = true;
+      trackExportEvent(`downloader_${kind}`, {
+        phase: "success",
+        platform,
+        title,
+        bytes: blob.size,
+      });
+      trackDownloaderEvent('download_complete', {
+        kind,
+        platform,
+        title,
+      });
       const info = {
         title,
         platform,
@@ -204,6 +221,17 @@ const DownloadOptions = ({ proxyUrl, title, platform, backendRoot, thumbnail, or
       }
 
       setError(userMessage);
+      trackExportEvent(`downloader_${kind}`, {
+        phase: "error",
+        platform,
+        title,
+        message: userMessage,
+      });
+      trackDownloaderEvent('download_failed', {
+        kind,
+        platform,
+        message: userMessage,
+      });
     } finally {
       setLoadingVideo(false);
       setLoadingAudio(false);
@@ -235,6 +263,8 @@ const DownloadOptions = ({ proxyUrl, title, platform, backendRoot, thumbnail, or
     if (lastDownloadInfo) {
       localStorage.setItem('mediaveed_last_download', JSON.stringify(lastDownloadInfo));
     }
+    trackButtonClick('open-highlight-tool-from-modal', { location: 'download_modal' });
+    trackNavigation('highlight-tool', { source: 'download_modal' });
     window.dispatchEvent(new CustomEvent('mediaveed:navigate', { detail: 'highlight-tool' }));
   };
 
