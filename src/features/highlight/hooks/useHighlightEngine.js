@@ -365,30 +365,17 @@ const useHighlightEngine = () => {
 
       try {
         const fullUrl = buildApiUrl(url);
-        const response = await fetch(fullUrl, {
-          headers: {
-            ...(API_KEY ? { 'X-API-Key': API_KEY } : {}),
-            ...getAuthHeaders(),
-          },
-        });
-
-        if (!response.ok) {
-          const message = await parseErrorResponse(response, 'Failed to download file');
-          throw new Error(message);
-        }
-
-        const blob = await response.blob();
+        // Use native navigation to avoid cross-origin stream aborts
         const link = document.createElement('a');
-        link.href = window.URL.createObjectURL(blob);
-        link.download = filename;
+        link.href = fullUrl;
+        link.download = filename || '';
+        link.rel = 'noopener';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        window.URL.revokeObjectURL(link.href);
         trackExportEvent(assetType, {
           phase: 'success',
           session_id: sessionId,
-          bytes: blob.size,
         });
       } catch (err) {
         console.error('Download error:', err);

@@ -496,6 +496,7 @@ const HighlightDashboard = ({
                                 className="segment-media__preview"
                                 playsInline
                                 controls
+                                crossOrigin="anonymous"
                                 muted
                                 autoPlay
                                 preload="auto"
@@ -744,7 +745,13 @@ const HighlightDashboard = ({
                 <Col lg={6}>
                   {reel.download_url && (
                     <div className="reel-preview-wrap">
-                      <video src={reel.download_url} className="reel-video" controls playsInline />
+                      <video
+                        src={reel.download_url}
+                        className="reel-video"
+                        controls
+                        playsInline
+                        crossOrigin="anonymous"
+                      />
                     </div>
                   )}
                 </Col>
