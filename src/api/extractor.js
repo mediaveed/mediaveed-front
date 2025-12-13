@@ -132,57 +132,35 @@ export const extractVideo = async (url) => {
  * Download video or audio
  */
 export const downloadMedia = async (proxyUrl, title, platform, kind = 'video') => {
-    try {
-        console.log(`📥 Starting ${kind} download...`);
-        console.log(`URL: ${proxyUrl}`);
-
-        let downloadUrl;
-
-        // Build the full download URL
-        if (proxyUrl.startsWith('/api')) {
-            downloadUrl = `${BASE_URL}${proxyUrl}`;
-        } else if (proxyUrl.startsWith('http')) {
-            downloadUrl = proxyUrl;
-        } else {
-            throw new Error('Invalid proxy URL format');
-        }
-
-        // Add kind parameter for audio downloads
-        if (kind === 'audio' && !downloadUrl.includes('kind=')) {
-            const separator = downloadUrl.includes('?') ? '&' : '?';
-            downloadUrl += `${separator}kind=audio`;
-        }
-
-        const fetchUrl = encodeURI(downloadUrl).replace(/#/g, '%23');
-        console.log(`🎯 Final download URL: ${fetchUrl}`);
-
-        const response = await fetch(fetchUrl);
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('❌ Download failed:', errorText);
-            throw new Error(`Download failed with status ${response.status}`);
-        }
-
-        const blob = await response.blob();
-        const blobUrl = window.URL.createObjectURL(blob);
-
-        // Create download link
-        const link = document.createElement('a');
-        link.href = blobUrl;
-        link.download = `${title || 'video'}.${kind === 'audio' ? 'mp3' : 'mp4'}`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-
-        // Cleanup
-        window.URL.revokeObjectURL(blobUrl);
-
-        console.log('✅ Download completed successfully');
-        return true;
-
-    } catch (error) {
-        console.error('❌ Download error:', error);
-        throw error;
+    if (!proxyUrl) {
+        throw new Error('No download URL provided');
     }
+
+    // Build the full download URL
+    let downloadUrl;
+    if (proxyUrl.startsWith('/api')) {
+        downloadUrl = `${BASE_URL}${proxyUrl}`;
+    } else if (proxyUrl.startsWith('http')) {
+        downloadUrl = proxyUrl;
+    } else {
+        throw new Error('Invalid proxy URL format');
+    }
+
+    // Add kind parameter for audio downloads
+    if (kind === 'audio' && !downloadUrl.includes('kind=')) {
+        const separator = downloadUrl.includes('?') ? '&' : '?';
+        downloadUrl += `${separator}kind=audio`;
+    }
+
+    const finalUrl = encodeURI(downloadUrl).replace(/#/g, '%23');
+    console.log(`🎯 Starting native download: ${finalUrl}`);
+
+    // Use native navigation to avoid XHR/fetch CORS aborts on large binary streams
+    const link = document.createElement('a');
+    link.href = finalUrl;
+    link.download = `${title || 'video'}.${kind === 'audio' ? 'mp3' : 'mp4'}`;
+    link.rel = 'noopener';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 };
