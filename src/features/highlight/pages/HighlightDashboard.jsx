@@ -102,7 +102,6 @@ const HighlightDashboard = ({
     platform: 'tiktok',
     caption: '',
   });
-  const [previewingSegment, setPreviewingSegment] = useState(null);
 
   const handleTryAnother = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -478,57 +477,26 @@ const HighlightDashboard = ({
                 const previewUrl = segment.preview_url || segment.clip_url;
                 const thumbnailUrl = segment.thumbnail_url;
                 const canPreview = Boolean(previewUrl);
-                const isPreviewing = previewingSegment === segment.segment_id && canPreview;
                 const energyLevel = (segment.energy || 'medium').toLowerCase();
                 const energyMeta = ENERGY_META[energyLevel] || ENERGY_META.medium;
                 const energyLabel = `${energyMeta.icon} ${energyMeta.label}`;
-                const previewToggleLabel = isPreviewing ? 'Close preview' : 'Preview clip';
 
                 return (
                   <Col md={6} lg={4} key={segment.segment_id}>
                     <Card className={`segment-card segment-card--modern ${isSelected ? 'active' : ''}`}>
                       <div className="segment-media">
                         {canPreview ? (
-                          isPreviewing ? (
-                            <div className="segment-media__preview-shell">
-                              <video
-                                src={previewUrl}
-                                className="segment-media__preview"
-                                playsInline
-                                controls
-                                crossOrigin="anonymous"
-                                muted
-                                autoPlay
-                                preload="auto"
-                                poster={thumbnailUrl || undefined}
-                              />
-                              <button
-                                type="button"
-                                className="segment-media__preview-btn segment-media__preview-btn--floating"
-                                onClick={() => setPreviewingSegment(null)}
-                              >
-                                Close preview
-                              </button>
-                            </div>
-                          ) : (
-                            <div
-                              className={`segment-media__thumbnail ${thumbnailUrl ? '' : 'segment-media__thumbnail--placeholder'}`}
-                              style={thumbnailUrl ? { backgroundImage: `url(${thumbnailUrl})` } : undefined}
-                            >
-                              <button
-                                type="button"
-                                className="segment-media__preview-btn"
-                                onClick={() =>
-                                  setPreviewingSegment((current) =>
-                                    current === segment.segment_id ? null : segment.segment_id
-                                  )
-                                }
-                              >
-                                {previewToggleLabel}
-                              </button>
-                              <span className="segment-media__hint">Uses cached MP4 for instant preview</span>
-                            </div>
-                          )
+                          <div className="segment-media__preview-shell">
+                            <video
+                              src={previewUrl}
+                              className="segment-media__preview"
+                              playsInline
+                              controls
+                              crossOrigin="anonymous"
+                              preload="auto"
+                              poster={thumbnailUrl || undefined}
+                            />
+                          </div>
                         ) : (
                           <div className="segment-media__thumbnail segment-media__thumbnail--placeholder">
                             Clip processing…
