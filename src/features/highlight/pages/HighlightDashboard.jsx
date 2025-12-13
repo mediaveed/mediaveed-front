@@ -534,13 +534,13 @@ const HighlightDashboard = ({
                             Clip processing…
                           </div>
                         )}
-                        <div className="segment-media__badges">
-                          <span className={`energy-chip energy-chip--${energyLevel}`}>{energyLabel}</span>
-                          <span className="duration-pill">{duration.toFixed(1)}s</span>
-                        </div>
                         {isSelected && <div className="segment-media__selected">Selected</div>}
                       </div>
                       <Card.Body>
+                        <div className="d-flex align-items-center gap-2 mb-2">
+                          <span className={`energy-chip energy-chip--${energyLevel}`}>{energyLabel}</span>
+                          <span className="duration-pill">{duration.toFixed(1)}s</span>
+                        </div>
                         <div className="segment-meta-grid">
                           <div>
                             <p className="meta-label">Segment</p>
